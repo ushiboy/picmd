@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ._const import MAX_DATA_LENGTH
+from ._const import MAX_DATA_SIZE
 from ._exception import InvalidParityException, \
         InvalidResultFormatException
 from ._util import calc_parity
@@ -38,5 +38,5 @@ class CommandResponse:
         if not 0x00 <= self.status <= 0xff:
             raise InvalidResultFormatException('unsupport status [%s]' % self.status)
         size = len(self.data)
-        if size > MAX_DATA_LENGTH:
+        if size > MAX_DATA_SIZE:
             raise InvalidResultFormatException('over data size [%s]' % size)
