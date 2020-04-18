@@ -1,14 +1,14 @@
 import pytest
-from picmd._data import Command, CommandResponse
+from picmd._data import CommandRequest, CommandResponse
 from picmd._exception import InvalidParityException, \
         InvalidResultFormatException
 
 def test_command_validate():
-    c = Command(0x01, 8, b'\x01\x00\x00\x00\x00\x00\x00\x00', 0x08)
+    c = CommandRequest(0x01, 8, b'\x01\x00\x00\x00\x00\x00\x00\x00', 0x08)
     c.validate()
 
     with pytest.raises(InvalidParityException):
-        c = Command(0x01, 8, b'\x01\x00\x00\x00\x00\x00\x00\x00', 0x09)
+        c = CommandRequest(0x01, 8, b'\x01\x00\x00\x00\x00\x00\x00\x00', 0x09)
         c.validate()
 
 def test_command_result_to_bytes():

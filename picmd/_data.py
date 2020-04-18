@@ -5,7 +5,7 @@ from ._exception import InvalidParityException, \
 from ._util import calc_parity
 
 @dataclass
-class Command:
+class CommandRequest:
     # 1byte
     command: int
     # 2byte

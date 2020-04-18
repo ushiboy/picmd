@@ -3,7 +3,7 @@ from typing import Dict, Callable
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
-from ._data import Command, CommandResponse
+from ._data import CommandRequest, CommandResponse
 from ._exception import CommandNotFoundException, \
         InvalidResultFormatException
 from ._util import data_to_bytes
@@ -36,7 +36,7 @@ class PiCmd:
         except KeyboardInterrupt:
             self._comm.stop()
 
-    def execute_command(self, command: Command) -> CommandResponse:
+    def execute_command(self, command: CommandRequest) -> CommandResponse:
         status = PICMD_NO_ERROR
         data = b''
         try:
@@ -60,7 +60,7 @@ class PiCmd:
             r = CommandResponse(PICMD_COMMAND_FAIL_ERROR)
         return r
 
-    def get_handler(self, command: Command) -> Callable:
+    def get_handler(self, command: CommandRequest) -> Callable:
         if command.command not in self._command_handlers:
             raise CommandNotFoundException
         return self._command_handlers[command.command]
