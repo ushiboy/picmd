@@ -23,7 +23,7 @@ class Command:
             raise InvalidParityException
 
 @dataclass
-class CommandResult:
+class CommandResponse:
     # 1byte
     status: int
     # any byte
