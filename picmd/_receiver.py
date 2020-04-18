@@ -2,19 +2,19 @@ from typing import Optional
 import struct
 import binascii
 from ._const import CMD_PREFIX, \
-        CMD_PREFIX_SIZE, \
+        CMD_PREFIX_LEN, \
         CMD_END, \
-        CMD_END_SIZE, \
-        CMD_SIZE, \
-        CMD_DATA_LENGTH_SIZE, \
-        CMD_PARITY_SIZE, \
-        MAX_DATA_LENGTH
-from ._data import Command
+        CMD_END_LEN, \
+        CMD_LEN, \
+        CMD_DATA_SIZE_LEN, \
+        CMD_PARITY_LEN, \
+        MAX_DATA_SIZE
+from ._data import CommandRequest
 from ._exception import InvalidFormatException, \
         InvalidLengthException
 
-CMD_STATIC_SIZE = CMD_PREFIX_SIZE + CMD_SIZE + CMD_DATA_LENGTH_SIZE
-UNINITIALIZED_DATA_SIZE = MAX_DATA_LENGTH + 1
+CMD_STATIC_SIZE = CMD_PREFIX_LEN + CMD_LEN + CMD_DATA_SIZE_LEN
+UNINITIALIZED_DATA_SIZE = MAX_DATA_SIZE + 1
 
 class ATCommandReceiver:
 
@@ -53,7 +53,7 @@ class ATCommandReceiver:
 
         if self._cur_cmd_data_size == UNINITIALIZED_DATA_SIZE and \
                 self._buffered_size >= CMD_STATIC_SIZE:
-            t = self._buffered[CMD_PREFIX_SIZE + CMD_SIZE: CMD_STATIC_SIZE]
+            t = self._buffered[CMD_PREFIX_LEN + CMD_LEN: CMD_STATIC_SIZE]
             try:
                 self._cur_cmd_data_size = struct.unpack('<H', binascii.a2b_hex(t))[0]
             except binascii.Error:
@@ -63,10 +63,10 @@ class ATCommandReceiver:
                 self._buffered_size = len(self._buffered)
                 raise InvalidFormatException
 
-    def pull_received_command(self) -> Optional[Command]:
+    def pull_received_command(self) -> Optional[CommandRequest]:
         d_end = CMD_STATIC_SIZE + self._cur_cmd_data_size * 2
-        p_end = d_end + CMD_PARITY_SIZE
-        end = p_end + CMD_END_SIZE
+        p_end = d_end + CMD_PARITY_LEN
+        end = p_end + CMD_END_LEN
 
         # check size
         if self._buffered_size < end:
@@ -85,13 +85,13 @@ class ATCommandReceiver:
         if buf[p_end: end] != CMD_END:
             raise InvalidLengthException
 
-        c = buf[CMD_PREFIX_SIZE: CMD_PREFIX_SIZE + CMD_SIZE]
+        c = buf[CMD_PREFIX_LEN: CMD_PREFIX_LEN + CMD_LEN]
         p = buf[d_end: p_end]
 
         try:
             cmd = int.from_bytes(binascii.a2b_hex(c), 'big')
             data = binascii.a2b_hex(buf[CMD_STATIC_SIZE: d_end])
             parity = int.from_bytes(binascii.a2b_hex(p), 'big')
-            return Command(cmd, size, data, parity)
+            return CommandRequest(cmd, size, data, parity)
         except binascii.Error:
             raise InvalidFormatException

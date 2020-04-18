@@ -6,7 +6,7 @@ from ._const import PICMD_NO_ERROR, \
         CMD_RESULT_PREFIX, \
         CMD_RESULT_OK, \
         CMD_RESULT_ERROR
-from ._data import CommandResult
+from ._data import CommandResponse
 from ._exception import InvalidFormatException, \
         InvalidLengthException
 from ._receiver import ATCommandReceiver
@@ -43,7 +43,7 @@ class Communicator:
     def receive_command(self):
         return self._generator
 
-    def send_result(self, result: CommandResult):
+    def send_result(self, result: CommandResponse):
         self._conn.write(CMD_RESULT_PREFIX)
         self._conn.write(result.to_bytes())
         if result.status == PICMD_NO_ERROR:
@@ -60,7 +60,7 @@ class Communicator:
                 if cmd is not None:
                     self._queue.put(cmd)
             except (InvalidFormatException, InvalidLengthException) as e:
-                self.send_result(CommandResult(e.status_code))
+                self.send_result(CommandResponse(e.status_code))
 
     def _make_generator(self):
         while True:

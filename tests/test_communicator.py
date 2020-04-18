@@ -3,7 +3,7 @@ import pytest
 from picmd._communicator import Communicator
 from picmd._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
-from picmd._data import CommandResult
+from picmd._data import CommandResponse
 from .mock import MockSerial
 
 def test_send_result():
@@ -11,13 +11,13 @@ def test_send_result():
     c = Communicator(s)
 
     # OK case
-    c.send_result(CommandResult(PICMD_NO_ERROR, b'\x01'))
+    c.send_result(CommandResponse(PICMD_NO_ERROR, b'\x01'))
     assert s.written_data == b'*CMD=\x01\x01\x00\x01\x01\r\nOK\r\n'
 
     s.written_data = b''    # clear
 
     # ERROR case
-    c.send_result(CommandResult(PICMD_COMMAND_FAIL_ERROR))
+    c.send_result(CommandResponse(PICMD_COMMAND_FAIL_ERROR))
     assert s.written_data == b'*CMD=\x06\x00\x00\x06\r\nERROR\r\n'
 
 def test_communicate():

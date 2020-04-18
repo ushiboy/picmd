@@ -1,28 +1,37 @@
-from typing import Dict, Callable
+import logging
+from typing import Dict, Callable, Union
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
-from ._data import Command, CommandResult
-from ._exception import CommandNotFoundException
+from ._data import CommandRequest, CommandResponse
+from ._exception import CommandNotFoundException, \
+        InvalidResultFormatException
 from ._util import data_to_bytes
+
+CommandHandler = Callable[[bytes, int], Union[bool, int, float, str, bytes, None]]
+
+log = logging.getLogger(__name__)
 
 class PiCmd:
 
     _comm: Communicator
-    _command_handlers: Dict
+    _command_handlers: Dict[int, CommandHandler]
 
     def __init__(self, comm: Communicator):
         self._command_handlers = {}
         self._comm = comm
 
-    def handler(self, command: int):
-        def decorator(f):
+    def handler(self, command: int) -> Callable[[CommandHandler], CommandHandler]:
+        def decorator(f: CommandHandler):
             self.add_handle_command(command, f)
             return f
         return decorator
 
-    def add_handle_command(self, command: int, handle_func):
-        self._command_handlers[command] = handle_func
+    def add_handle_command(self, command: int, handle_func: CommandHandler):
+        if 0x00 <= command <= 0xff:
+            self._command_handlers[command] = handle_func
+        else:
+            raise ValueError('command out of range 0x00 to 0xff [%s]' % command)
 
     def run(self):
         self._comm.start()
@@ -32,13 +41,13 @@ class PiCmd:
         except KeyboardInterrupt:
             self._comm.stop()
 
-    def execute_command(self, command: Command) -> CommandResult:
+    def execute_command(self, cmd_req: CommandRequest) -> CommandResponse:
         status = PICMD_NO_ERROR
         data = b''
         try:
-            command.validate()
-            h = self.get_handler(command)
-            result = h(command.data, command.size)
+            cmd_req.validate()
+            h = self.get_handler(cmd_req)
+            result = h(cmd_req.data, cmd_req.size)
             data = data_to_bytes(result)
         except Exception as e:
             if hasattr(e, 'status_code'):
@@ -47,9 +56,16 @@ class PiCmd:
                 status = PICMD_COMMAND_FAIL_ERROR
             if hasattr(e, 'description'):
                 data = data_to_bytes(e.description) # type: ignore
-        return CommandResult(status, data)
 
-    def get_handler(self, command: Command) -> Callable:
+        r = CommandResponse(status, data)
+        try:
+            r.validate()
+        except InvalidResultFormatException as e:
+            log.error(e)
+            r = CommandResponse(PICMD_COMMAND_FAIL_ERROR)
+        return r
+
+    def get_handler(self, command: CommandRequest) -> CommandHandler:
         if command.command not in self._command_handlers:
             raise CommandNotFoundException
         return self._command_handlers[command.command]
