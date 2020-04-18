@@ -36,13 +36,13 @@ class PiCmd:
         except KeyboardInterrupt:
             self._comm.stop()
 
-    def execute_command(self, command: CommandRequest) -> CommandResponse:
+    def execute_command(self, cmd_req: CommandRequest) -> CommandResponse:
         status = PICMD_NO_ERROR
         data = b''
         try:
-            command.validate()
-            h = self.get_handler(command)
-            result = h(command.data, command.size)
+            cmd_req.validate()
+            h = self.get_handler(cmd_req)
+            result = h(cmd_req.data, cmd_req.size)
             data = data_to_bytes(result)
         except Exception as e:
             if hasattr(e, 'status_code'):
