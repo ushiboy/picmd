@@ -18,11 +18,11 @@ import time
 app = PiCmd.create('/dev/serial0')
 
 @app.handler(0x01)
-def handler(data: bytes, size: int) -> str:
+def greeting_handler(data: bytes, size: int) -> str:
     return 'hello world'
 
 @app.handler(0x02)
-def handler(data: bytes, size: int):
+def file_receive_handler(data: bytes, size: int):
     with open('./tmp/received-%s.bin' % int(time.time()), 'wb') as f:
         f.write(data)
 
@@ -31,25 +31,105 @@ app.run()
 
 ## AT Command Format
 
-(wip)
+### Command Request (Client -> Application)
+
+Hexadecimal data starting with `AT*CMD=` and ending with `CRLF`.
+
+The command type is specified by the first 8 bits.
+
+The command parameter size is represented by the second 16 bits. Then there is the content of the command parameters.
+
+The check parity is the XOR of the values ​​from command type to command parameter.
+
+```
+AT*CMD=0104000100000004\r\n
+<-----><><--><------><><-->
+   \    \  \     \    \  \_ command end delimiter (CRLF)
+    \    \  \     \    \_ check parity
+     \    \  \     \_ command data (The length changes depending on the value of "command data size")
+      \    \  \_ command data size (max 0xffff)
+       \    \_ command (max 0xff)
+        \_ command start prefix
+```
+
+### Command Response (Application -> Client)
+
+Hexadecimal data starting with `*CMD=` and ending with `CRLF`.
+
+The response status is specified by the first 8 bits.
+
+The response data size is represented by the second 16 bits. Then there is the content of the response datas.
+
+The check parity is the XOR of the values ​​from response status to response data.
+
+#### OK
+
+```
+*CMD=0104000100000004\r\nOK\r\n
+<---><><--><------><><-------->
+  \   \  \     \    \      \_ response end delimiter
+   \   \  \     \    \_ check parity
+    \   \  \     \_ response data (The length changes depending on the value of "response data size")
+     \   \  \_ response data size (max 0xffff)
+      \   \_ response status (0x01)
+       \_ response start prefix
+```
+
+#### ERROR
+
+```
+*CMD=0704000100000002\r\nERROR\r\n
+<---><><--><------><><----------->
+  \   \  \     \    \       \_ response end delimiter
+   \   \  \     \    \_ check parity
+    \   \  \     \_ response data (The length changes depending on the value of "response data size")
+     \   \  \_ response data size (max 0xffff)
+      \   \_ response status (values ​​from 0x02 to 0xff)
+       \_ response start prefix
+```
+
+#### Reserved value of response status
+
+| status | description |
+|---|---|
+| 0x01 | No error |
+| 0x02 | Invalid command format error |
+| 0x03 | Invalid parity error |
+| 0x04 | Command not found error |
+| 0x05 | Invalid data length error |
+| 0x06 | Command fail error |
+
 
 ## Command Handler Interface
 
-(wip)
+The command handler function receives the command parameter byte in the first argument and the command parameter size in the second argument.
+
+### When returning some kind of response
+
+Returns a value of type `bool`,` int`, `float`,`str`, or `bytes`.
 
 ```python
 @app.handler(0x01)
-def handler1(data: bytes, data_size: int) -> Union[bool, int, float, str, bytes, None]:
+def handler(data: bytes, data_size: int) -> Union[bool, int, float, str, bytes]:
     ....
     return response_data
 ```
 
+### When returning no response
+
+Returns nothing.
+
 ```python
-@app.handler(0x02)
-def handler2(data: bytes, data_size: int):
+@app.handler(0x01)
+def handler(data: bytes, data_size: int):
     ....
     # nothing return
 ```
+
+### If you want to return your domain error status
+
+Raise an exception with the `status_code` attribute.
+If you want to return error message etc. as response data, add `description` attribute.
 
 ```python
 class DomainException(Exception):
