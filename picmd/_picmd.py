@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Callable
+from typing import Dict, Callable, Union
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
@@ -8,24 +8,26 @@ from ._exception import CommandNotFoundException, \
         InvalidResultFormatException
 from ._util import data_to_bytes
 
+CommandHandler = Callable[[bytes, int], Union[bool, int, float, str, bytes, None]]
+
 log = logging.getLogger(__name__)
 
 class PiCmd:
 
     _comm: Communicator
-    _command_handlers: Dict
+    _command_handlers: Dict[int, CommandHandler]
 
     def __init__(self, comm: Communicator):
         self._command_handlers = {}
         self._comm = comm
 
-    def handler(self, command: int):
-        def decorator(f):
+    def handler(self, command: int) -> Callable[[CommandHandler], CommandHandler]:
+        def decorator(f: CommandHandler):
             self.add_handle_command(command, f)
             return f
         return decorator
 
-    def add_handle_command(self, command: int, handle_func):
+    def add_handle_command(self, command: int, handle_func: CommandHandler):
         self._command_handlers[command] = handle_func
 
     def run(self):
@@ -60,7 +62,7 @@ class PiCmd:
             r = CommandResponse(PICMD_COMMAND_FAIL_ERROR)
         return r
 
-    def get_handler(self, command: CommandRequest) -> Callable:
+    def get_handler(self, command: CommandRequest) -> CommandHandler:
         if command.command not in self._command_handlers:
             raise CommandNotFoundException
         return self._command_handlers[command.command]
