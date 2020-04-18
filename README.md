@@ -136,23 +136,25 @@ class DomainException(Exception):
     status_code = 0xff
     description = 'any error message'
 
-@app.handler(0x03)
-def handler3(data: bytes, data_size: int):
+@app.handler(0x01)
+def handler(data: bytes, data_size: int):
     ....
     raise DomainException
 ```
 
 ## API
 
-(wip)
-
 ### PiCmd
 
-#### PiCmd.create
+#### `PiCmd.create(serial_port: str) -> PiCmd`
 
-#### handler
+Take the serial port path as an argument and create an instance.
 
-#### run
+#### `@handler(command: int)`
+
+Decorator that takes a command type as an argument and registers it as a handler.
+
+#### `run()`
 
 ## Change Log
 
