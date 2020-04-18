@@ -156,6 +156,8 @@ Decorator that takes a command type as an argument and registers it as a handler
 
 #### `run()`
 
+Start accepting and responding to commands.
+
 ## Change Log
 
 ### 0.1.0
