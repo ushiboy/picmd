@@ -28,7 +28,10 @@ class PiCmd:
         return decorator
 
     def add_handle_command(self, command: int, handle_func: CommandHandler):
-        self._command_handlers[command] = handle_func
+        if 0x00 <= command <= 0xff:
+            self._command_handlers[command] = handle_func
+        else:
+            raise ValueError('command out of range 0x00 to 0xff [%s]' % command)
 
     def run(self):
         self._comm.start()

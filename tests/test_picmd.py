@@ -21,6 +21,19 @@ class InvalidStatusCodeException(Exception):
 class InvalidDescriptionException(Exception):
     description = b'\x00' * (0xffff + 1)
 
+def test_handler():
+    p = PiCmd(Communicator(MockSerial()))
+
+    @p.handler(0x01)
+    def h1(data, size):
+        pass
+
+    with pytest.raises(ValueError):
+        @p.handler(256)
+        def h2(data, size):
+            pass
+
+
 def test_execute_command():
     p = PiCmd(Communicator(MockSerial()))
 
