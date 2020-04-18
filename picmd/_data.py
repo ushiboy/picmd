@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from ._exception import InvalidParityException
+from ._const import MAX_DATA_LENGTH
+from ._exception import InvalidParityException, \
+        InvalidResultFormatException
 from ._util import calc_parity
 
 @dataclass
@@ -31,3 +33,10 @@ class CommandResult:
         size = len(self.data)
         t = bytes([self.status, size & 0xff00 >> 8, size >> 8]) + self.data
         return t + bytes([calc_parity(t)])
+
+    def validate(self):
+        if not 0x00 <= self.status <= 0xff:
+            raise InvalidResultFormatException('unsupport status [%s]' % self.status)
+        size = len(self.data)
+        if size > MAX_DATA_LENGTH:
+            raise InvalidResultFormatException('over data size [%s]' % size)

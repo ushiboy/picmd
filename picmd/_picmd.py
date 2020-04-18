@@ -1,10 +1,14 @@
+import logging
 from typing import Dict, Callable
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
 from ._data import Command, CommandResult
-from ._exception import CommandNotFoundException
+from ._exception import CommandNotFoundException, \
+        InvalidResultFormatException
 from ._util import data_to_bytes
+
+log = logging.getLogger(__name__)
 
 class PiCmd:
 
@@ -47,7 +51,14 @@ class PiCmd:
                 status = PICMD_COMMAND_FAIL_ERROR
             if hasattr(e, 'description'):
                 data = data_to_bytes(e.description) # type: ignore
-        return CommandResult(status, data)
+
+        r = CommandResult(status, data)
+        try:
+            r.validate()
+        except InvalidResultFormatException as e:
+            log.error(e)
+            r = CommandResult(PICMD_COMMAND_FAIL_ERROR)
+        return r
 
     def get_handler(self, command: Command) -> Callable:
         if command.command not in self._command_handlers:

@@ -26,3 +26,8 @@ class InvalidLengthException(Exception):
     Invalid command length Error
     """
     status_code = PICMD_INVALID_LENGTH_ERROR
+
+class InvalidResultFormatException(Exception):
+    """
+    Invalid result format Error
+    """
