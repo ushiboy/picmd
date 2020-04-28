@@ -25,7 +25,7 @@ def test_store_buff():
     assert r.buffered_size == 8
 
     # append piece of command prefix
-    r.store_buff(b'CMD=')
+    r.store_buff(b'PIC=')
     assert r.cur_cmd_data_size == UNINITIALIZED_DATA_SIZE
     assert r.buffered_size == 7 # cut noise
 
@@ -54,7 +54,7 @@ def test_store_buff_when_invalid_data_size():
     assert r.cur_cmd_data_size == UNINITIALIZED_DATA_SIZE
     assert r.buffered_size == 0
 
-    r.store_buff(b'AT*CMD=01')
+    r.store_buff(b'AT*PIC=01')
     assert r.cur_cmd_data_size == UNINITIALIZED_DATA_SIZE
     assert r.buffered_size == 9
 
@@ -69,7 +69,7 @@ def test_pull_received_command():
     assert r1.cur_cmd_data_size == UNINITIALIZED_DATA_SIZE
     assert r1.buffered_size == 0
 
-    r1.store_buff(b'AT*CMD=01000001\r')
+    r1.store_buff(b'AT*PIC=01000001\r')
     assert r1.pull_received_command() is None
     assert r1.cur_cmd_data_size == 0
     assert r1.buffered_size == 16
@@ -85,7 +85,7 @@ def test_pull_received_command():
 
 
     r2 = ATCommandReceiver()
-    r2.store_buff(b'AT*CMD=0101000202\r\nAT*CMD=')
+    r2.store_buff(b'AT*PIC=0101000202\r\nAT*PIC=')
     assert r2.cur_cmd_data_size == 1
     assert r2.buffered_size == 26
 
@@ -99,7 +99,7 @@ def test_pull_received_command():
 
 
     r3 = ATCommandReceiver()
-    r3.store_buff(b'AT*CMD=0101000202\r?AT*CMD=')
+    r3.store_buff(b'AT*PIC=0101000202\r?AT*PIC=')
     with pytest.raises(InvalidLengthException):
         r3.pull_received_command()
     assert r3.cur_cmd_data_size == UNINITIALIZED_DATA_SIZE # reset
@@ -107,7 +107,7 @@ def test_pull_received_command():
 
 def test_pull_received_command_when_invalid_command():
     r1 = ATCommandReceiver()
-    r1.store_buff(b'AT*CMD=ZZ000001\r\n')
+    r1.store_buff(b'AT*PIC=ZZ000001\r\n')
 
     with pytest.raises(InvalidFormatException):
         r1.pull_received_command()
@@ -116,7 +116,7 @@ def test_pull_received_command_when_invalid_command():
 
 def test_pull_received_command_when_invalid_data():
     r1 = ATCommandReceiver()
-    r1.store_buff(b'AT*CMD=010100ZZ01\r\n')
+    r1.store_buff(b'AT*PIC=010100ZZ01\r\n')
 
     with pytest.raises(InvalidFormatException):
         r1.pull_received_command()
@@ -125,7 +125,7 @@ def test_pull_received_command_when_invalid_data():
 
 def test_pull_received_command_when_invalid_parity():
     r1 = ATCommandReceiver()
-    r1.store_buff(b'AT*CMD=010000ZZ\r\n')
+    r1.store_buff(b'AT*PIC=010000ZZ\r\n')
 
     with pytest.raises(InvalidFormatException):
         r1.pull_received_command()

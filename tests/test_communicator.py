@@ -12,17 +12,17 @@ def test_send_result():
 
     # OK case
     c.send_result(CommandResponse(PICMD_NO_ERROR, b'\x01'))
-    assert s.written_data == b'*CMD=\x01\x01\x00\x01\x01\r\nOK\r\n'
+    assert s.written_data == b'*PIC:\x01\x01\x00\x01\x01\r\nOK\r\n'
 
     s.written_data = b''    # clear
 
     # ERROR case
     c.send_result(CommandResponse(PICMD_COMMAND_FAIL_ERROR))
-    assert s.written_data == b'*CMD=\x06\x00\x00\x06\r\nERROR\r\n'
+    assert s.written_data == b'*PIC:\x06\x00\x00\x06\r\nERROR\r\n'
 
 def test_communicate():
     s = MockSerial([
-        b'AT*CMD=0101000202\r\n'
+        b'AT*PIC=0101000202\r\n'
         ])
     c = Communicator(s)
     c.start()
@@ -43,7 +43,7 @@ def test_communicate():
 
 def test_communicate_when_invalid_length():
     s = MockSerial([
-        b'AT*CMD=0101000202\r?' # invalid end
+        b'AT*PIC=0101000202\r?' # invalid end
         ])
     c = Communicator(s)
     c.start()
@@ -54,4 +54,4 @@ def test_communicate_when_invalid_length():
     with pytest.raises(StopIteration):
         next(g)
 
-    assert s.written_data == b'*CMD=\x05\x00\x00\x05\r\nERROR\r\n'
+    assert s.written_data == b'*PIC:\x05\x00\x00\x05\r\nERROR\r\n'
