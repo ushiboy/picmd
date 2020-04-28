@@ -110,7 +110,7 @@ def test_get_handler():
 
 def test_picmd_runner():
     s = MockSerial([
-        b'AT*CMD=0101000202\r\n'
+        b'AT*PIC=0101000202\r\n'
         ])
     c = Communicator(s)
     p = PiCmd(c)
@@ -123,4 +123,4 @@ def test_picmd_runner():
     time.sleep(0.1)
     c.stop()
 
-    assert s.written_data == b'*CMD=\x01\x08\x00\x01\x00\x00\x00\x00\x00\x00\x00\x08\r\nOK\r\n'
+    assert s.written_data == b'*PIC:\x01\x08\x00\x01\x00\x00\x00\x00\x00\x00\x00\x08\r\nOK\r\n'
