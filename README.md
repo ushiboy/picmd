@@ -33,16 +33,16 @@ app.run()
 
 ### Command Request (Client -> Application)
 
-Hexadecimal data starting with `AT*CMD=` and ending with `CRLF`.
+Hexadecimal data starting with `AT*PIC=` and ending with `CRLF`.
 
 The command type is specified by the first 8 bits.
 
 The command parameter size is represented by the second 16 bits. Then there is the content of the command parameters.
 
-The check parity is the XOR of the values ​​from command type to command parameter.
+The check parity is the XOR of the values from command type to command parameter.
 
 ```
-AT*CMD=0104000100000004\r\n
+AT*PIC=0104000100000004\r\n
 <-----><><--><------><><-->
    \    \  \     \    \  \_ command end delimiter (CRLF)
     \    \  \     \    \_ check parity
@@ -54,18 +54,18 @@ AT*CMD=0104000100000004\r\n
 
 ### Command Response (Application -> Client)
 
-Hexadecimal data starting with `*CMD=` and ending with `CRLF`.
+Hexadecimal data starting with `*PIC:` and ending with `CRLF`.
 
 The response status is specified by the first 8 bits.
 
 The response data size is represented by the second 16 bits. Then there is the content of the response datas.
 
-The check parity is the XOR of the values ​​from response status to response data.
+The check parity is the XOR of the values from response status to response data.
 
 #### OK
 
 ```
-*CMD=0104000100000004\r\nOK\r\n
+*PIC:0104000100000004\r\nOK\r\n
 <---><><--><------><><-------->
   \   \  \     \    \      \_ response end delimiter
    \   \  \     \    \_ check parity
@@ -78,13 +78,13 @@ The check parity is the XOR of the values ​​from response status to response
 #### ERROR
 
 ```
-*CMD=0704000100000002\r\nERROR\r\n
+*PIC:0704000100000002\r\nERROR\r\n
 <---><><--><------><><----------->
   \   \  \     \    \       \_ response end delimiter
    \   \  \     \    \_ check parity
     \   \  \     \_ response data (The length changes depending on the value of "response data size")
      \   \  \_ response data size (max 0xffff)
-      \   \_ response status (values ​​from 0x02 to 0xff)
+      \   \_ response status (values from 0x02 to 0xff)
        \_ response start prefix
 ```
 
@@ -159,6 +159,10 @@ Decorator that takes a command type as an argument and registers it as a handler
 Start accepting and responding to commands.
 
 ## Change Log
+
+### 0.2.0
+
+Change request and resopnse prefix.
 
 ### 0.1.0
 
