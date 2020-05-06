@@ -22,7 +22,7 @@ def test_send_result():
 
 def test_communicate():
     s = MockSerial([
-        b'AT*PIC=0101000202\r\n'
+        b'AT*PIC=\x01\x01\x00\x02\x02\r\n'
         ])
     c = Communicator(s)
     c.start()
@@ -43,7 +43,7 @@ def test_communicate():
 
 def test_communicate_when_invalid_length():
     s = MockSerial([
-        b'AT*PIC=0101000202\r?' # invalid end
+        b'AT*PIC=\x01\x01\x00\x02\x02\r?' # invalid end
         ])
     c = Communicator(s)
     c.start()
