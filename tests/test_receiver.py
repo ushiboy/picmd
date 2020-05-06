@@ -1,6 +1,5 @@
 import pytest
-from picmd._exception import InvalidFormatException, \
-        InvalidLengthException
+from picmd._exception import InvalidLengthException
 from picmd._receiver import ATCommandReceiver, UNINITIALIZED_DATA_SIZE
 
 

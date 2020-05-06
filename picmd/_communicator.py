@@ -7,8 +7,7 @@ from ._const import PICMD_NO_ERROR, \
         CMD_RESULT_OK, \
         CMD_RESULT_ERROR
 from ._data import CommandResponse
-from ._exception import InvalidFormatException, \
-        InvalidLengthException
+from ._exception import InvalidLengthException
 from ._receiver import ATCommandReceiver
 
 class Communicator:
@@ -59,7 +58,7 @@ class Communicator:
                 cmd = at.pull_received_command()
                 if cmd is not None:
                     self._queue.put(cmd)
-            except (InvalidFormatException, InvalidLengthException) as e:
+            except InvalidLengthException as e:
                 self.send_result(CommandResponse(e.status_code))
 
     def _make_generator(self):
