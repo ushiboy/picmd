@@ -66,7 +66,7 @@ def calc_parity(values):
 
 s = SerialCommunicator.connect('/dev/ttyUSB0')
 
-s.send_tx(b'AT*CMD=01000001\r\n')
+s.send_tx(b'AT*PIC=\x01\x00\x00\x01\r\n')
 r1 = s.sync_read_rx()
 print(parse_result(r1)) # (1, 11, b'hello world', True)
 
@@ -74,8 +74,8 @@ with open('./data.dat', 'rb') as f:
     buff = f.read()
     buff_size = len(buff)
     tx_data = bytes([0x02]) + struct.pack('<H', buff_size) + buff
-    s.send_tx(b'AT*CMD=')
-    s.send_tx(binascii.b2a_hex(tx_data + bytes([calc_parity(tx_data)])))
+    s.send_tx(b'AT*PIC=')
+    s.send_tx(tx_data + bytes([calc_parity(tx_data)]))
     s.send_tx(b'\r\n')
 
 r2 = s.sync_read_rx()
