@@ -42,13 +42,13 @@ The command parameter size is represented by the second 16 bits. Then there is t
 The check parity is the XOR of the values from command type to command parameter.
 
 ```
-AT*PIC=0104000100000004\r\n
-<-----><><--><------><><-->
-   \    \  \     \    \  \_ command end delimiter (CRLF)
-    \    \  \     \    \_ check parity
-     \    \  \     \_ command data (The length changes depending on the value of "command data size")
-      \    \  \_ command data size (max 0xffff)
-       \    \_ command (max 0xff)
+AT*PIC=\x01\x04\x00\x01\x00\x00\x00\x04\r\n
+<-----><--><------><--------------><--><-->
+   \     \      \     \               \  \_ command end delimiter (CRLF)
+    \     \      \     \               \_ check parity
+     \     \      \     \_ command data (The length changes depending on the value of "command data size")
+      \     \      \_ command data size (max 0xffff)
+       \     \_ command (max 0xff)
         \_ command start prefix
 ```
 
@@ -65,26 +65,26 @@ The check parity is the XOR of the values from response status to response data.
 #### OK
 
 ```
-*PIC:0104000100000004\r\nOK\r\n
-<---><><--><------><><-------->
-  \   \  \     \    \      \_ response end delimiter
-   \   \  \     \    \_ check parity
-    \   \  \     \_ response data (The length changes depending on the value of "response data size")
-     \   \  \_ response data size (max 0xffff)
-      \   \_ response status (0x01)
+*PIC:\x01\x04\x00\x01\x00\x00\x00\x04\r\nOK\r\n
+<---><--><------><--------------><--><-------->
+  \    \      \       \             \      \_ response end delimiter
+   \    \      \       \             \_ check parity
+    \    \      \       \_ response data (The length changes depending on the value of "response data size")
+     \    \      \_ response data size (max 0xffff)
+      \    \_ response status (0x01)
        \_ response start prefix
 ```
 
 #### ERROR
 
 ```
-*PIC:0704000100000002\r\nERROR\r\n
-<---><><--><------><><----------->
-  \   \  \     \    \       \_ response end delimiter
-   \   \  \     \    \_ check parity
-    \   \  \     \_ response data (The length changes depending on the value of "response data size")
-     \   \  \_ response data size (max 0xffff)
-      \   \_ response status (values from 0x02 to 0xff)
+*PIC:\x07\x04\x00\x01\x00\x00\x00\x02\r\nERROR\r\n
+<---><--><------><--------------><--><----------->
+  \    \      \       \            \       \_ response end delimiter
+   \    \      \       \            \_ check parity
+    \    \      \       \_ response data (The length changes depending on the value of "response data size")
+     \    \      \_ response data size (max 0xffff)
+      \    \_ response status (values from 0x02 to 0xff)
        \_ response start prefix
 ```
 
@@ -159,6 +159,10 @@ Decorator that takes a command type as an argument and registers it as a handler
 Start accepting and responding to commands.
 
 ## Change Log
+
+### 0.3.0
+
+Change the data format of the protocol.
 
 ### 0.2.0
 
