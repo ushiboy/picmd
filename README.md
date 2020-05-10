@@ -160,6 +160,10 @@ Start accepting and responding to commands.
 
 ## Change Log
 
+### 0.4.0
+
+Added support for omitting the arguments of the handler function.
+
 ### 0.3.0
 
 Change the data format of the protocol.
