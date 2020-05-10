@@ -1,15 +1,13 @@
 import logging
-from inspect import signature
-from typing import Dict, Callable, Union
+from typing import Dict, Callable
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
 from ._data import CommandRequest, CommandResponse
 from ._exception import CommandNotFoundException, \
         InvalidResultFormatException
+from ._handler import Handler, CommandHandler
 from ._util import data_to_bytes
-
-CommandHandler = Callable[[bytes, int], Union[bool, int, float, str, bytes, None]]
 
 log = logging.getLogger(__name__)
 
@@ -22,15 +20,15 @@ class PiCmd:
         self._command_handlers = {}
         self._comm = comm
 
-    def handler(self, command: int) -> Callable[[CommandHandler], CommandHandler]:
-        def decorator(f: CommandHandler):
+    def handler(self, command: int) -> Callable[[Handler], Handler]:
+        def decorator(f: Handler):
             self.add_handle_command(command, f)
             return f
         return decorator
 
-    def add_handle_command(self, command: int, handle_func: CommandHandler):
+    def add_handle_command(self, command: int, handle_func: Handler):
         if 0x00 <= command <= 0xff:
-            self._command_handlers[command] = handle_func
+            self._command_handlers[command] = CommandHandler(handle_func)
         else:
             raise ValueError('command out of range 0x00 to 0xff [%s]' % command)
 
@@ -48,13 +46,7 @@ class PiCmd:
         try:
             cmd_req.validate()
             h = self.get_handler(cmd_req)
-            sig = signature(h)
-            args = []
-            if 'data' in sig.parameters:
-                args.append(cmd_req.data)
-            if 'size' in sig.parameters:
-                args.append(cmd_req.size)
-            result = h(*args)
+            result = h.execute(cmd_req)
             data = data_to_bytes(result)
         except Exception as e:
             if hasattr(e, 'status_code'):
