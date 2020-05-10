@@ -42,11 +42,11 @@ def test_execute_command():
         return 1
 
     @p.handler(0x02)
-    def h2(data, size):
+    def h2(data):
         raise Exception
 
     @p.handler(0x03)
-    def h3(data, size):
+    def h3(size):
         raise DomainException
 
     @p.handler(0x04)
@@ -82,7 +82,7 @@ def test_execute_command_when_invalid_result_format():
     p = PiCmd(Communicator(MockSerial()))
 
     @p.handler(0x01)
-    def h1(data, size):
+    def h1():
         return b'\x00' * (0xffff + 1) # over data size
 
     @p.handler(0x02)
@@ -125,7 +125,7 @@ def test_picmd_runner():
     p = PiCmd(c)
 
     @p.handler(0x01)
-    def h1(data, size):
+    def h1():
         return 1
 
     Thread(target=p.run, daemon=True).start()
