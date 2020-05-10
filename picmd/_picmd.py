@@ -1,4 +1,5 @@
 import logging
+from inspect import signature
 from typing import Dict, Callable, Union
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
@@ -47,7 +48,13 @@ class PiCmd:
         try:
             cmd_req.validate()
             h = self.get_handler(cmd_req)
-            result = h(cmd_req.data, cmd_req.size)
+            sig = signature(h)
+            args = []
+            if 'data' in sig.parameters:
+                args.append(cmd_req.data)
+            if 'size' in sig.parameters:
+                args.append(cmd_req.size)
+            result = h(*args)
             data = data_to_bytes(result)
         except Exception as e:
             if hasattr(e, 'status_code'):
