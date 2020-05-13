@@ -133,3 +133,27 @@ def test_picmd_runner():
     c.stop()
 
     assert s.written_data == b'*PIC:\x01\x08\x00\x01\x00\x00\x00\x00\x00\x00\x00\x08\r\nOK\r\n'
+
+def test_provide():
+    s = MockSerial([
+        b'AT*PIC=\x01\x01\x00\x02\x02\r\n'
+        ])
+    c = Communicator(s)
+    p = PiCmd(c)
+
+    def a(v):
+        return v + 1
+
+    p.provide({
+        'a': a
+    })
+
+    @p.handler(0x01)
+    def h1(data, a):
+        return a(int.from_bytes(data, 'big'))
+
+    Thread(target=p.run, daemon=True).start()
+    time.sleep(0.1)
+    c.stop()
+
+    assert s.written_data == b'*PIC:\x01\x08\x00\x03\x00\x00\x00\x00\x00\x00\x00\x0a\r\nOK\r\n'
