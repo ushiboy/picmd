@@ -1,7 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from inspect import signature
-from typing import Callable, Union
+from typing import Callable, Union, Dict, Any, Optional, List
 from ._data import CommandRequest
+
+Provided = Dict[str, Any]
 
 HandleResult = Union[bool, int, float, str, bytes, None]
 
@@ -15,19 +17,20 @@ Handler = Union[HandlerBothArgs, HandlerDataOnly, HandlerSizeOnly, HandlerNoArgs
 class ArgumentConfig:
     need_data: bool = False
     need_size: bool = False
+    provided_keys: List[str] = field(default_factory=list)
 
-class HandlerArgument:
-
-    def __init__(self, config: ArgumentConfig, data: bytes, size: int):
-        self._config = config
-        self._data = data
-        self._size = size
-
-    def __iter__(self):
-        if self._config.need_data:
-            yield self._data
-        if self._config.need_size:
-            yield self._size
+def to_arguments(config: ArgumentConfig,
+                 req: CommandRequest,
+                 provided: Optional[Provided]) -> List[Any]:
+    provided = provided if provided is not None else {}
+    args: List[Any] = []
+    if config.need_data:
+        args.append(req.data)
+    if config.need_size:
+        args.append(req.size)
+    for k in config.provided_keys:
+        args.append(provided[k])
+    return args
 
 class CommandHandler:
 
@@ -39,8 +42,10 @@ class CommandHandler:
         sig = signature(handler)
         need_data = 'data' in sig.parameters
         need_size = 'size' in sig.parameters
-        self._config = ArgumentConfig(need_data, need_size)
+        params = list(sig.parameters.keys())
+        keys = list(filter(lambda x: x not in ('data', 'size'), params))
+        self._config = ArgumentConfig(need_data, need_size, keys)
 
-    def execute(self, req: CommandRequest) -> HandleResult:
-        args = HandlerArgument(self._config, req.data, req.size)
+    def execute(self, req: CommandRequest, provided: Provided = None) -> HandleResult:
+        args = to_arguments(self._config, req, provided)
         return self._handler(*args)
