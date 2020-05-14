@@ -1,24 +1,27 @@
 import logging
-from typing import Dict, Callable
+from typing import Dict, Callable, Optional
 from ._communicator import Communicator
 from ._const import PICMD_NO_ERROR, \
         PICMD_COMMAND_FAIL_ERROR
 from ._data import CommandRequest, CommandResponse
 from ._exception import CommandNotFoundException, \
         InvalidResultFormatException
-from ._handler import Handler, CommandHandler
+from ._handler import Handler, CommandHandler, Provided
 from ._util import data_to_bytes
 
 log = logging.getLogger(__name__)
+
 
 class PiCmd:
 
     _comm: Communicator
     _command_handlers: Dict[int, CommandHandler]
+    _provided: Optional[Provided]
 
     def __init__(self, comm: Communicator):
         self._command_handlers = {}
         self._comm = comm
+        self._provided = None
 
     def handler(self, command: int) -> Callable[[Handler], Handler]:
         def decorator(f: Handler):
@@ -31,6 +34,9 @@ class PiCmd:
             self._command_handlers[command] = CommandHandler(handle_func)
         else:
             raise ValueError('command out of range 0x00 to 0xff [%s]' % command)
+
+    def provide(self, provided: Provided):
+        self._provided = provided
 
     def run(self):
         self._comm.start()
@@ -46,7 +52,7 @@ class PiCmd:
         try:
             cmd_req.validate()
             h = self.get_handler(cmd_req)
-            result = h.execute(cmd_req)
+            result = h.execute(cmd_req, self._provided)
             data = data_to_bytes(result)
         except Exception as e:
             if hasattr(e, 'status_code'):
