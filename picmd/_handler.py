@@ -7,11 +7,12 @@ Provided = Dict[str, Any]
 
 HandleResult = Union[bool, int, float, str, bytes, None]
 
+HandlerAnyArgs = Callable[..., HandleResult]
 HandlerBothArgs = Callable[[bytes, int], HandleResult]
 HandlerDataOnly = Callable[[bytes], HandleResult]
 HandlerSizeOnly = Callable[[int], HandleResult]
 HandlerNoArgs = Callable[[], HandleResult]
-Handler = Union[HandlerBothArgs, HandlerDataOnly, HandlerSizeOnly, HandlerNoArgs]
+Handler = Union[HandlerAnyArgs, HandlerBothArgs, HandlerDataOnly, HandlerSizeOnly, HandlerNoArgs]
 
 @dataclass
 class ArgumentConfig:
