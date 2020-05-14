@@ -102,7 +102,43 @@ The check parity is the XOR of the values from response status to response data.
 
 ## Command Handler Interface
 
-The command handler function receives the byte data of the command parameter as the first argument and the size of the command parameter as the second argument. Also, one or both of these can be omitted.
+The command handler function receives the byte data of the command parameter in the first argument `data` and the size of the command parameter in the second argument `size`. It is also possible to omit either or both of these.
+
+You can take a dependency set by the `provide` function (see later) as an argument.
+
+### Examples of handlers' arguments
+
+An example of a case where you want to receive both data and size.
+
+```python
+@app.handler(0x01)
+def handler(data: bytes, size: int):
+    ....
+```
+
+An example of receiving data only.
+
+```python
+@app.handler(0x01)
+def handler(data: bytes):
+    ....
+```
+
+Example of a case where both are not received.
+
+```python
+@app.handler(0x01)
+def handler():
+    ....
+```
+
+An example of receiving data and dependencies.
+
+```python
+@app.handler(0x01)
+def handler(data: bytes, service1: Service1, service2: Service2):
+    ....
+```
 
 ### When returning some kind of response
 
@@ -110,7 +146,7 @@ Returns a value of type `bool`,` int`, `float`,`str`, or `bytes`.
 
 ```python
 @app.handler(0x01)
-def handler(data: bytes, data_size: int) -> Union[bool, int, float, str, bytes]:
+def handler(data: bytes, size: int) -> Union[bool, int, float, str, bytes]:
     ....
     return response_data
 ```
@@ -121,7 +157,7 @@ Returns nothing.
 
 ```python
 @app.handler(0x01)
-def handler(data: bytes, data_size: int):
+def handler(data: bytes, size: int):
     ....
     # nothing return
 ```
@@ -137,7 +173,7 @@ class DomainException(Exception):
     description = 'any error message'
 
 @app.handler(0x01)
-def handler(data: bytes, data_size: int):
+def handler(data: bytes, size: int):
     ....
     raise DomainException
 ```
@@ -153,6 +189,20 @@ Take the serial port path as an argument and create an instance.
 #### `@handler(command: int)`
 
 Decorator that takes a command type as an argument and registers it as a handler.
+
+#### `provide(provided: Dict[str, Any])`
+
+Specifies the dependency to pass to the handler by dict.
+The handler will receive the same arguments as the key name.
+
+for example.
+
+```python
+app.provide({
+    'service1': service1,
+    'service2': service2
+})
+```
 
 #### `run()`
 
