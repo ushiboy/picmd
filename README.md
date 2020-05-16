@@ -210,6 +210,10 @@ Start accepting and responding to commands.
 
 ## Change Log
 
+### 0.5.0
+
+Added the feature to provide dependency.
+
 ### 0.4.0
 
 Added support for omitting the arguments of the handler function.
