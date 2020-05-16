@@ -10,7 +10,7 @@ class PyTest(test):
 
 setup(
     name='picmd',
-    version='0.4.0',
+    version='0.5.0',
     packages=['picmd'],
     package_data={
         'picmd': ['py.typed'],
