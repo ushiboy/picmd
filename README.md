@@ -232,6 +232,10 @@ The libraries for the client are as follows.
 
 ## Change Log
 
+### 0.6.0
+
+Added a feature to confirm communication.
+
 ### 0.5.0
 
 Added the feature to provide dependency.
