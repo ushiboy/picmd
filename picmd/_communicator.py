@@ -55,11 +55,18 @@ class Communicator:
         while self._alive:
             try:
                 at.store_buff(self._conn.read(self._conn.in_waiting or 1))
+                if at.should_pong:
+                    at.reset_pong()
+                    self._send_pong()
+                    continue
                 cmd = at.pull_received_command()
                 if cmd is not None:
                     self._queue.put(cmd)
             except InvalidLengthException as e:
                 self.send_result(CommandResponse(e.status_code))
+
+    def _send_pong(self):
+        self._conn.write(CMD_RESULT_OK)
 
     def _make_generator(self):
         while True:
