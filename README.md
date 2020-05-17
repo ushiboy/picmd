@@ -224,6 +224,12 @@ app.provide({
 
 Start accepting and responding to commands.
 
+## Client library
+
+The libraries for the client are as follows.
+
+* [node-picmd](https://github.com/ushiboy/node-picmd) (node.js)
+
 ## Change Log
 
 ### 0.5.0
