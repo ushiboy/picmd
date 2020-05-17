@@ -100,6 +100,22 @@ The check parity is the XOR of the values from response status to response data.
 | 0x06 | Command fail error |
 
 
+### How to confirm communication
+
+Sends the following command.
+
+```
+AT\r\n
+```
+
+If the next message is received in the response, the communication confirmation is successful.
+
+```
+\r\n
+OK
+\r\n
+```
+
 ## Command Handler Interface
 
 The command handler function receives the byte data of the command parameter in the first argument `data` and the size of the command parameter in the second argument `size`. It is also possible to omit either or both of these.
@@ -208,7 +224,17 @@ app.provide({
 
 Start accepting and responding to commands.
 
+## Client library
+
+The libraries for the client are as follows.
+
+* [node-picmd](https://github.com/ushiboy/node-picmd) (node.js)
+
 ## Change Log
+
+### 0.6.0
+
+Added a feature to confirm communication.
 
 ### 0.5.0
 

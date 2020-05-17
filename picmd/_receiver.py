@@ -7,7 +7,8 @@ from ._const import CMD_PREFIX, \
         CMD_LEN, \
         CMD_DATA_SIZE_LEN, \
         CMD_PARITY_LEN, \
-        MAX_DATA_SIZE
+        MAX_DATA_SIZE, \
+        CMD_PING
 from ._data import CommandRequest
 from ._exception import InvalidLengthException
 
@@ -20,6 +21,7 @@ class ATCommandReceiver:
     _cur_cmd_data_size: int
     _buffered: bytes
     _buffered_size: int
+    _should_pong: bool
 
     @property
     def cur_cmd_data_size(self):
@@ -29,11 +31,16 @@ class ATCommandReceiver:
     def buffered_size(self):
         return self._buffered_size
 
+    @property
+    def should_pong(self):
+        return self._should_pong
+
     def __init__(self):
         self._ready_to_receive_command = False
         self._buffered = b''
         self._cur_cmd_data_size = UNINITIALIZED_DATA_SIZE
         self._buffered_size = len(self._buffered)
+        self._should_pong = False
 
     def store_buff(self, buff: bytes):
         if len(buff) == 0:
@@ -44,6 +51,11 @@ class ATCommandReceiver:
         if not self._ready_to_receive_command:
             p = self._buffered.find(CMD_PREFIX)
             if p < 0:
+                p = self._buffered.find(CMD_PING)
+                if p > -1:
+                    self._should_pong = True
+                    self._buffered = self._buffered[p:]
+                    self._buffered_size = len(self._buffered)
                 return
             self._ready_to_receive_command = True
             self._buffered = self._buffered[p:]
@@ -83,3 +95,6 @@ class ATCommandReceiver:
         data = buf[CMD_STATIC_SIZE: d_end]
         parity = int.from_bytes(p, 'big')
         return CommandRequest(cmd, size, data, parity)
+
+    def reset_pong(self):
+        self._should_pong = False

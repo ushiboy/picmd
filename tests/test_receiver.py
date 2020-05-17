@@ -48,6 +48,24 @@ def test_store_buff():
     assert r.cur_cmd_data_size == 255 # not change
     assert r.buffered_size == 12
 
+def test_store_buff_when_ping():
+    a1 = ATCommandReceiver()
+    assert a1.should_pong == False
+    a1.store_buff(b'AT\r\n')
+    assert a1.should_pong == True
+
+    a2 = ATCommandReceiver()
+    a2.store_buff(b'AT\r')
+    assert a2.should_pong == False
+    a2.store_buff(b'\n')
+    assert a2.should_pong == True
+
+    a3 = ATCommandReceiver()
+    a3.store_buff(b'AT*PIC=\x01\x04\x00AT\r\n\x17\r\n')
+    assert a3.cur_cmd_data_size == 4
+    assert a3.buffered_size == 17
+    assert a3.should_pong == False
+
 def test_pull_received_command():
     r1 = ATCommandReceiver()
     assert r1.pull_received_command() is None
@@ -89,3 +107,11 @@ def test_pull_received_command():
         r3.pull_received_command()
     assert r3.cur_cmd_data_size == UNINITIALIZED_DATA_SIZE # reset
     assert r3.buffered_size == 7 # change
+
+def test_reset_pong():
+    a1 = ATCommandReceiver()
+    a1.store_buff(b'AT\r\n')
+    assert a1.should_pong == True
+
+    a1.reset_pong()
+    assert a1.should_pong == False

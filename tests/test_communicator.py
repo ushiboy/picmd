@@ -55,3 +55,14 @@ def test_communicate_when_invalid_length():
         next(g)
 
     assert s.written_data == b'*PIC:\x05\x00\x00\x05\r\nERROR\r\n'
+
+def test_communicate_when_a_ping_command_is_received():
+    s = MockSerial([
+        b'AT\r\n'
+        ])
+    c = Communicator(s)
+    c.start()
+    time.sleep(0.1)
+    c.stop()
+
+    assert s.written_data == b'\r\nOK\r\n'
