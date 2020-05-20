@@ -232,6 +232,10 @@ The libraries for the client are as follows.
 
 ## Change Log
 
+### 0.6.1
+
+Fixed a response bug of the PING command.
+
 ### 0.6.0
 
 Added a feature to confirm communication.
