@@ -54,7 +54,7 @@ class ATCommandReceiver:
                 p = self._buffered.find(CMD_PING)
                 if p > -1:
                     self._should_pong = True
-                    self._buffered = self._buffered[p:]
+                    self._buffered = self._buffered[p + len(CMD_PING):]
                     self._buffered_size = len(self._buffered)
                 return
             self._ready_to_receive_command = True
