@@ -1,7 +1,7 @@
-pi-cmd
+picmd
 =====
 
-pi-cmd is a framework for creating applications that request and respond to AT commands using serial communication.
+picmd is a framework for creating applications that request and respond to AT commands using serial communication.
 
 Its main purpose is for use with Raspberry PI.
 
