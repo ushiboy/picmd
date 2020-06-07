@@ -220,9 +220,21 @@ app.provide({
 })
 ```
 
+#### `import_handler_register(handler_register: HandlerRegister)`
+
+Import the handlers registered in the HandlerRegister.
+
 #### `run()`
 
 Start accepting and responding to commands.
+
+### HandlerRegister
+
+It is used to register handlers to be imported into PiCmd.
+
+#### `@handler(command: int)`
+
+Decorator that takes a command type as an argument and registers it as a handler.
 
 ## Client library
 
@@ -231,6 +243,10 @@ The libraries for the client are as follows.
 * [node-picmd](https://github.com/ushiboy/node-picmd) (node.js)
 
 ## Change Log
+
+### 0.7.0
+
+Added HandlerRegister feature.
 
 ### 0.6.1
 

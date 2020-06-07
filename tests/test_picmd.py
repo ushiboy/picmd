@@ -8,6 +8,7 @@ from picmd._const import PICMD_NO_ERROR, \
 from picmd._data import CommandRequest
 from picmd._exception import CommandNotFoundException
 from picmd._picmd import PiCmd
+from picmd._register import HandlerRegister
 from .mock import MockSerial
 
 
@@ -32,7 +33,6 @@ def test_handler():
         @p.handler(256)
         def h2(data, size):
             pass
-
 
 def test_execute_command():
     p = PiCmd(Communicator(MockSerial()))
@@ -157,3 +157,40 @@ def test_provide():
     c.stop()
 
     assert s.written_data == b'*PIC:\x01\x08\x00\x03\x00\x00\x00\x00\x00\x00\x00\x0a\r\nOK\r\n'
+
+def test_import_handler_register():
+    p = PiCmd(Communicator(MockSerial()))
+
+    @p.handler(0x01)
+    def h1():
+        return 1
+
+    hr1 = HandlerRegister()
+    hr2 = HandlerRegister()
+
+    @hr1.handler(0x02)
+    def h2():
+        return 2
+
+    @hr2.handler(0x03)
+    def h3():
+        return 3
+
+    @hr2.handler(0x04)
+    def h4():
+        return 4
+
+    p.import_handler_register(hr1)
+    p.import_handler_register(hr2)
+
+    r1 = p.execute_command(CommandRequest(0x01, 0, b'', 0x01))
+    assert r1.data == b'\x01\x00\x00\x00\x00\x00\x00\x00'
+
+    r2 = p.execute_command(CommandRequest(0x02, 0, b'', 0x02))
+    assert r2.data == b'\x02\x00\x00\x00\x00\x00\x00\x00'
+
+    r3 = p.execute_command(CommandRequest(0x03, 0, b'', 0x03))
+    assert r3.data == b'\x03\x00\x00\x00\x00\x00\x00\x00'
+
+    r4 = p.execute_command(CommandRequest(0x04, 0, b'', 0x04))
+    assert r4.data == b'\x04\x00\x00\x00\x00\x00\x00\x00'

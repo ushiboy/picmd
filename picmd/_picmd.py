@@ -7,6 +7,7 @@ from ._data import CommandRequest, CommandResponse
 from ._exception import CommandNotFoundException, \
         InvalidResultFormatException
 from ._handler import Handler, CommandHandler, Provided
+from ._register import HandlerRegister
 from ._util import data_to_bytes
 
 log = logging.getLogger(__name__)
@@ -37,6 +38,10 @@ class PiCmd:
 
     def provide(self, provided: Provided):
         self._provided = provided
+
+    def import_handler_register(self, handler_register: HandlerRegister):
+        for cmd, handler in handler_register.handlers:
+            self.add_handle_command(cmd, handler)
 
     def run(self):
         self._comm.start()
