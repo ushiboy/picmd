@@ -220,9 +220,21 @@ app.provide({
 })
 ```
 
+#### `import_handler_register(handler_register: HandlerRegister)`
+
+Import the handlers registered in the HandlerRegister.
+
 #### `run()`
 
 Start accepting and responding to commands.
+
+### HandlerRegister
+
+It is used to register handlers to be imported into PiCmd.
+
+#### `@handler(command: int)`
+
+Decorator that takes a command type as an argument and registers it as a handler.
 
 ## Client library
 
