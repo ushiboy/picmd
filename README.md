@@ -244,6 +244,10 @@ The libraries for the client are as follows.
 
 ## Change Log
 
+### 0.7.0
+
+Added HandlerRegister feature.
+
 ### 0.6.1
 
 Fixed a response bug of the PING command.
